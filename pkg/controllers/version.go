@@ -42,13 +42,14 @@ func (s *VersionManager) Dependencies() []string {
 
 func (s *VersionManager) Run(ctx context.Context, ready chan<- struct{}, stopped chan<- struct{}) error {
 
-	var cm = "assets/version/microshift-version.yaml"
+	var cm = "assets/version/openshift-version-configmap.yaml"
 
 	defer close(stopped)
 	defer close(ready)
 
 	versionInfo := version.Get()
 	var data = map[string]string{
+		"product": "MicroShift",
 		"major":   versionInfo.Major,
 		"minor":   versionInfo.Minor,
 		"version": versionInfo.String(),

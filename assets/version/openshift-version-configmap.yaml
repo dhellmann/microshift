@@ -2,9 +2,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: microshift-version
+  name: openshift-version
   namespace: kube-public
 data:
+  product: "MicroShift"
   major: ""
   minor: ""
   version: ""

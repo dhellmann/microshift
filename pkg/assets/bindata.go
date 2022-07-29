@@ -74,7 +74,7 @@
 // assets/scc/0000_20_kube-apiserver-operator_00_scc-nonroot.yaml
 // assets/scc/0000_20_kube-apiserver-operator_00_scc-privileged.yaml
 // assets/scc/0000_20_kube-apiserver-operator_00_scc-restricted.yaml
-// assets/version/microshift-version.yaml
+// assets/version/openshift-version-configmap.yaml
 package assets
 
 import (
@@ -5305,29 +5305,30 @@ func assetsScc0000_20_kubeApiserverOperator_00_sccRestrictedYaml() (*asset, erro
 	return a, nil
 }
 
-var _assetsVersionMicroshiftVersionYaml = []byte(`# Values are filled in at runtime by the VersionController
+var _assetsVersionOpenshiftVersionConfigmapYaml = []byte(`# Values are filled in at runtime by the VersionController
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: microshift-version
+  name: openshift-version
   namespace: kube-public
 data:
+  product: "MicroShift"
   major: ""
   minor: ""
   version: ""
 `)
 
-func assetsVersionMicroshiftVersionYamlBytes() ([]byte, error) {
-	return _assetsVersionMicroshiftVersionYaml, nil
+func assetsVersionOpenshiftVersionConfigmapYamlBytes() ([]byte, error) {
+	return _assetsVersionOpenshiftVersionConfigmapYaml, nil
 }
 
-func assetsVersionMicroshiftVersionYaml() (*asset, error) {
-	bytes, err := assetsVersionMicroshiftVersionYamlBytes()
+func assetsVersionOpenshiftVersionConfigmapYaml() (*asset, error) {
+	bytes, err := assetsVersionOpenshiftVersionConfigmapYamlBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/version/microshift-version.yaml", size: 196, mode: os.FileMode(420), modTime: time.Unix(1654679854, 0)}
+	info := bindataFileInfo{name: "assets/version/openshift-version-configmap.yaml", size: 219, mode: os.FileMode(420), modTime: time.Unix(1654679854, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -5458,7 +5459,7 @@ var _bindata = map[string]func() (*asset, error){
 	"assets/scc/0000_20_kube-apiserver-operator_00_scc-nonroot.yaml":                                         assetsScc0000_20_kubeApiserverOperator_00_sccNonrootYaml,
 	"assets/scc/0000_20_kube-apiserver-operator_00_scc-privileged.yaml":                                      assetsScc0000_20_kubeApiserverOperator_00_sccPrivilegedYaml,
 	"assets/scc/0000_20_kube-apiserver-operator_00_scc-restricted.yaml":                                      assetsScc0000_20_kubeApiserverOperator_00_sccRestrictedYaml,
-	"assets/version/microshift-version.yaml":                                                                 assetsVersionMicroshiftVersionYaml,
+	"assets/version/openshift-version-configmap.yaml":                                                        assetsVersionOpenshiftVersionConfigmapYaml,
 }
 
 // AssetDir returns the file names below a certain
@@ -5604,7 +5605,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"0000_20_kube-apiserver-operator_00_scc-restricted.yaml":       {assetsScc0000_20_kubeApiserverOperator_00_sccRestrictedYaml, map[string]*bintree{}},
 		}},
 		"version": {nil, map[string]*bintree{
-			"microshift-version.yaml": {assetsVersionMicroshiftVersionYaml, map[string]*bintree{}},
+			"openshift-version-configmap.yaml": {assetsVersionOpenshiftVersionConfigmapYaml, map[string]*bintree{}},
 		}},
 	}},
 }}
