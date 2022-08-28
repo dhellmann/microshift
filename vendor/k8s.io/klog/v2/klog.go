@@ -601,15 +601,26 @@ func (l *loggingT) header(s severity, depth int) (*buffer, string, int) {
 		file = "???"
 		line = 1
 	} else {
-		if slash := strings.LastIndex(file, "/"); slash >= 0 {
+		// We want filenames to be full names relative to the root of
+		// the git repo, but without the base path where we checked
+		// things out during the build. That gives us
+		// microshift-specific code under 'pkg/', as well as
+		// components under 'vendor/'. The repo name is 'microshift',
+		// so look for the last instance in the path and take the rest
+		// of the path and filename after that point.
+		if msDir := strings.LastIndex(file, "microshift/"); msDir >= 0 {
 			path := file
-			file = path[slash+1:]
-			if l.addDirHeader {
-				if dirsep := strings.LastIndex(path[:slash], "/"); dirsep >= 0 {
-					file = path[dirsep+1:]
-				}
-			}
+			file = path[msDir+11:]
 		}
+		// if slash := strings.LastIndex(file, "/"); slash >= 0 {
+		// 	path := file
+		// 	file = path[slash+1:]
+		// 	if l.addDirHeader {
+		// 		if dirsep := strings.LastIndex(path[:slash], "/"); dirsep >= 0 {
+		// 			file = path[dirsep+1:]
+		// 		}
+		// 	}
+		// }
 	}
 	return l.formatHeader(s, file, line), file, line
 }
