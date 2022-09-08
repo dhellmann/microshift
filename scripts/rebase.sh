@@ -28,7 +28,8 @@ trap 'echo "Script exited with error."' ERR
 #trap 'echo "# $BASH_COMMAND"' DEBUG
 #set -x
 
-REPOROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/..")"
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+REPOROOT="$(readlink -f "${SCRIPT_DIR}/..")"
 STAGING_DIR="$REPOROOT/_output/staging"
 PULL_SECRET_FILE="${HOME}/.pull-secret.json"
 
@@ -387,31 +388,28 @@ update_manifests() {
 
     title "Rebasing manifests"
 
-    #-- OpenShift control plane ---------------------------
-    # 1) Adopt resource manifests
-    #    Selectively copy in only those CRD manifests that MicroShift is already using
-    cp "${STAGING_DIR}/release-manifests/0000_03_authorization-openshift_01_rolebindingrestriction.crd.yaml" "${REPOROOT}"/assets/crd
-    cp "${STAGING_DIR}/release-manifests/0000_03_security-openshift_01_scc.crd.yaml" "${REPOROOT}"/assets/crd
-    cp "${STAGING_DIR}/cluster-kube-controller-manager-operator/bindata/assets/kube-controller-manager/namespace-openshift-infra.yaml" "${REPOROOT}"/assets/core
-    # TODO: add route CRD (https://github.com/openshift/api/blob/master/route/v1/route.crd.yaml) when we rebase to a release that contains it
     #    Replace all SCC manifests.
     rm -f "${REPOROOT}"/assets/scc/*.yaml
-    cp "${STAGING_DIR}"/release-manifests/0000_20_kube-apiserver-operator_00_scc-*.yaml "${REPOROOT}"/assets/scc || true
-    # 2) Render operand manifest templates like the operator would
+    #    Replace all openshift-dns operand manifests
+    rm -f "${REPOROOT}"/assets/components/openshift-dns/dns/*
+    rm -f "${REPOROOT}"/assets/components/openshift-dns/node-resolver/*
+
+    cat "${SCRIPT_DIR}/manifests.txt" | grep -v -e '^#' -e '^$' | while read src dst; do
+        echo "${src} -> ${dst}"
+        cp "${STAGING_DIR}/${src}" "${REPOROOT}/assets/${dst}"
+    done
+
+    #-- OpenShift control plane ---------------------------
+    # 1) Render operand manifest templates like the operator would
     #    n/a
-    # 3) Make MicroShift-specific changes
+    # 2) Make MicroShift-specific changes
     #    Add the missing scc shortName
     yq -i '.spec.names.shortNames = ["scc"]' "${REPOROOT}"/assets/crd/0000_03_security-openshift_01_scc.crd.yaml
-    # 4) Replace MicroShift templating vars (do this last, as yq trips over Go templates)
+    # 3) Replace MicroShift templating vars (do this last, as yq trips over Go templates)
     #    n/a
 
     #-- openshift-dns -------------------------------------
     # 1) Adopt resource manifests
-    #    Replace all openshift-dns operand manifests
-    rm -f "${REPOROOT}"/assets/components/openshift-dns/dns/*
-    cp "${STAGING_DIR}"/cluster-dns-operator/assets/dns/* "${REPOROOT}"/assets/components/openshift-dns/dns 2>/dev/null || true 
-    rm -f "${REPOROOT}"/assets/components/openshift-dns/node-resolver/*
-    cp "${STAGING_DIR}/"cluster-dns-operator/assets/node-resolver/* "${REPOROOT}"/assets/components/openshift-dns/node-resolver 2>/dev/null || true
     #    Restore the openshift-dns ConfigMap. It's content is the Corefile that the operator generates
     #    in https://github.com/openshift/cluster-dns-operator/blob/master/pkg/operator/controller/controller_dns_configmap.go
     git restore "${REPOROOT}"/assets/components/openshift-dns/dns/configmap.yaml

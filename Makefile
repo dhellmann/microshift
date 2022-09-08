@@ -119,6 +119,11 @@ verify: verify-bindata
 verify-bindata: update-bindata
 	./scripts/verify_bindata.sh
 
+.PHONY: verify-assets
+verify: verify-assets
+verify-assets:
+	./scripts/verify_assets.sh
+
 ###############################
 # post install validate       #
 ###############################

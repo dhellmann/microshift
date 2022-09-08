@@ -1,0 +1,27 @@
+# List of manifests to copy from source image into this repository.
+# Each line should have the source path relative to the root of the
+# image directory and the output directory relative to the assets directory
+# in this repo separated by a space.
+#
+# Blank lines and lines starting with # are ignored.
+
+#-- OpenShift control plane ---------------------------
+
+# Selectively copy in only those CRD manifests that MicroShift is already using
+# TODO: add route CRD (https://github.com/openshift/api/blob/master/route/v1/route.crd.yaml) when we rebase to a release that contains it
+release-manifests/0000_03_authorization-openshift_01_rolebindingrestriction.crd.yaml crd
+release-manifests/0000_03_security-openshift_01_scc.crd.yaml crd
+cluster-kube-controller-manager-operator/bindata/assets/kube-controller-manager/namespace-openshift-infra.yaml core
+
+# SCC Manifests
+release-manifests/0000_20_kube-apiserver-operator_00_scc-anyuid.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-hostaccess.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-hostmount-anyuid.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-hostnetwork.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-nonroot.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-privileged.yaml scc
+release-manifests/0000_20_kube-apiserver-operator_00_scc-restricted.yaml scc
+
+#-- openshift-dns -------------------------------------
+    cp "${STAGING_DIR}"/cluster-dns-operator/assets/dns/* "${REPOROOT}"/assets/components/openshift-dns/dns 2>/dev/null || true 
+    cp "${STAGING_DIR}/"cluster-dns-operator/assets/node-resolver/* "${REPOROOT}"/assets/components/openshift-dns/node-resolver 2>/dev/null || true
