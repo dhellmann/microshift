@@ -27,13 +27,41 @@ const (
 	gracefulShutdownTimeout = 60
 )
 
-func NewRunMicroshiftCommand() *cobra.Command {
-	cfg := config.NewMicroshiftConfig()
+// Get the active configuration. If the configuration file exists,
+// read it and require it to be valid. Otherwise return the default
+// settings.
+func getConfig() (*config.Config, error) {
+	var cfg *config.Config
+	filename := config.GetConfigFile()
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		// No configuration file, use the default settings
+		return config.NewMicroshiftConfig(), nil
+	} else if err != nil {
+		return nil, err
+	}
+	cfg, err = config.Read(filename)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
 
+func NewRunMicroshiftCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run MicroShift",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := getConfig()
+			if err != nil {
+				return err
+			}
+			// Things to very badly if the node's name has changed
+			// since the last time the server started.
+			err = cfg.EnsureNodeNameHasNotChanged()
+			if err != nil {
+				return err
+			}
 			return RunMicroshift(cfg)
 		},
 	}
@@ -42,10 +70,6 @@ func NewRunMicroshiftCommand() *cobra.Command {
 }
 
 func RunMicroshift(cfg *config.Config) error {
-	if err := cfg.ReadAndValidate(config.GetConfigFile()); err != nil {
-		klog.Fatalf("Error in reading or validating configuration: %v", err)
-	}
-
 	// fail early if we don't have enough privileges
 	if os.Geteuid() > 0 {
 		klog.Fatalf("MicroShift must be run privileged")
