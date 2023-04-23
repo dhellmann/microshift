@@ -1,6 +1,8 @@
 *** Settings ***
-Library     SSHLibrary
-Library     String
+Library    Process
+Library    SSHLibrary
+Library    String
+Library    OperatingSystem
 
 
 *** Keywords ***
@@ -29,3 +31,4 @@ Run With Kubeconfig
     IF    ${allow_fail} == False
         Should Be Equal As Integers    ${result.rc}    0
     END
+    RETURN  ${result.stdout}

@@ -29,6 +29,14 @@ with-tag:
 		-x xunit.xml \
 		./tests/microshift.robot
 
+version:
+	.venv/bin/robot \
+		-v USHIFT_IP:$${USHIFT_IP} \
+		-v USHIFT_USER:microshift \
+		--outputdir ../_output/e2e-$$(date +'%Y%m%d-%H%M%S') \
+		-x xunit.xml \
+		./tests/version.robot
+
 all:
 	.venv/bin/robot \
 		-v USHIFT_IP:$${USHIFT_IP} \
