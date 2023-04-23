@@ -37,6 +37,14 @@ version:
 		-x xunit.xml \
 		./tests/version.robot
 
+etcd:
+	.venv/bin/robot \
+		-v USHIFT_IP:$${USHIFT_IP} \
+		-v USHIFT_USER:microshift \
+		--outputdir ../_output/e2e-results \
+		-x xunit.xml \
+		./tests/etcd.robot
+
 all:
 	.venv/bin/robot \
 		-v USHIFT_IP:$${USHIFT_IP} \

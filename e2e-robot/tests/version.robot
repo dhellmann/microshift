@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       MicroShift e2e test suite
+Documentation       Tests related to the version of MicroShift
 
 Resource            ../resources/common.resource
 Resource            ../resources/oc.resource
