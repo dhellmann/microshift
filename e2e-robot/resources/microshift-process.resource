@@ -3,6 +3,7 @@ Library    Process
 Library    SSHLibrary
 Library    String
 Library    OperatingSystem
+Resource    ../resources/systemd.resource
 
 
 *** Keywords ***
@@ -33,27 +34,9 @@ Parse Version Line
 
 Restart MicroShift
     [Documentation]  Restart the MicroShift service
-    Open Connection    ${USHIFT_IP}
-    Login    ${USHIFT_USER}    allow_agent=True
-
-    ${stdout}  ${rc}=  Execute Command
-    ...    systemctl restart microshift
-    ...    sudo=True  return_rc=True
-    #Should Be Equal As Integers  0  ${rc}
-
-    # It takes a bit for systemd to respond, and if we check too soon
-    # then it looks like microshift is up, even though it is about to
-    # be restarted.
-    Sleep    5s
-
-    Wait Until Keyword Succeeds
-    ...    10x
-    ...    10s
-    ...    Execute Command
-    ...    [ $(systemctl show -p SubState --value microshift) = "running" ]
-    ...    timeout=10s    return_stdout=True    return_stderr=True
-
-    Close Connection
+    Systemctl  restart  microshift
+    # Systemctl  stop  microshift
+    # Systemctl  start  microshift
 
 
 Clear MicroShift Config

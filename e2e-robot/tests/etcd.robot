@@ -23,23 +23,24 @@ ${MEMLIMIT128J}
 ...  {"etcd": {"memoryLimitMB": 128}}
 
 *** Test Cases ***
-Show
-    Log  ${MEMLIMIT128}
-    Log  ${MEMLIMIT128J}
-    ${val}=  Convert to Yaml  ${MEMLIMIT128J}
-    Log  ${val}
+# Show
+#     Log  ${MEMLIMIT128}
+#     Log  ${MEMLIMIT128J}
+#     ${val}=  Convert to Yaml  ${MEMLIMIT128J}
+#     Log  ${val}
 
 Default MemoryHigh Unlimited
-    ${memory_high}=  Get Systemd Setting  microshift-etcd  MemoryHigh
-    Should Be Equal  infinity  ${memory_high}
+    [Documentation]  The default configuration should not limit RAM
+    [Tags]  etcd  configuration  default
+    Expect MemoryHigh  infinity
 
 Set MemoryHigh Limit 128MB
     [Documentation]  Set the memory limit for etcd to 128MB and ensure it takes effect
+    [Tags]  etcd  configuration
     Upload MicroShift Config  ${MEMLIMIT128}
     Restart MicroShift
-    ${memory_high}=  Get Systemd Setting  ${ETCD_SYSTEMD_UNIT}  MemoryHigh
     # Expecting the setting to be 128 * 1024 * 1024
-    Should Be Equal As Integers  134217728  ${memory_high}
+    Expect MemoryHigh  134217728
 
 *** Keywords ***
 Setup
@@ -51,3 +52,12 @@ Teardown
 Reset Default Config
     Clear MicroShift Config
     Restart MicroShift
+
+Expect MemoryHigh
+    [Arguments]  ${expected}
+    ${actual}=  Get Systemd Setting  microshift-etcd.scope  MemoryHigh
+    IF  ('${expected}' == 'infinity') or ('${actual}' == 'infinity')
+        Should Be Equal  ${expected}  ${actual}
+    ELSE
+        Should Be Equal As Integers  ${expected}  ${actual}
+    END
