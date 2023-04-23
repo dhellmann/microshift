@@ -4,6 +4,7 @@ Library    SSHLibrary
 Library    String
 Library    OperatingSystem
 Resource    ../resources/systemd.resource
+Library    ../resources/YAML.py
 
 
 *** Keywords ***
@@ -12,16 +13,12 @@ MicroShift Version
     Open Connection    ${USHIFT_IP}
     Login    ${USHIFT_USER}    allow_agent=True
     ${version_text}    ${rc}=    Execute Command
-    ...    microshift version
+    ...    microshift version -o yaml
     ...    sudo=True    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     Should Not Be Empty    ${version_text}
     Close Connection
-    ${microshift_version_line}=  Get Line  ${version_text}  0
-    ${microshift_version}=  Parse Version Line  ${microshift_version_line}
-    ${ocp_version_line}=  Get Line  ${version_text}  0
-    ${ocp_version}=  Parse Version Line  ${ocp_version_line}
-    ${version}=  Create Dictionary  microshift=${microshift_version}  ocp=${ocp_version}  raw=${version_text}
+    ${version}=  Yaml Parse  ${version_text}
     RETURN  ${version}
 
 
@@ -35,8 +32,6 @@ Parse Version Line
 Restart MicroShift
     [Documentation]  Restart the MicroShift service
     Systemctl  restart  microshift
-    # Systemctl  stop  microshift
-    # Systemctl  start  microshift
 
 
 Clear MicroShift Config

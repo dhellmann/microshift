@@ -30,7 +30,12 @@ CLI Output
     [Documentation]  Check the version reported by the process
 
     ${version_data}=  MicroShift Version
-    ${microshift_version}=  Get From Dictionary  ${version_data}  microshift
+    ${major_version}=  Get From Dictionary  ${version_data}  major
+    Should Be Equal As Integers    ${major_version}    4
+    ${minor_version}=  Get From Dictionary  ${version_data}  minor
+    Should Be Equal As Integers    ${minor_version}    14
+
+    ${microshift_version}=  Get From Dictionary  ${version_data}  gitVersion
     Should Start With  ${microshift_version}  4.14
 
 
@@ -40,5 +45,5 @@ ConfigMap Matches CLI
     ${version_configmap}=  Oc Get  configmap  kube-public  microshift-version
     ${value_configmap}=  Yaml Get  ${version_configmap}  data.version
     ${version_cli}=  MicroShift Version
-    ${value_cli}=  Get From Dictionary  ${version_cli}  microshift
+    ${value_cli}=  Get From Dictionary  ${version_cli}  gitVersion
     Should Be Equal  ${value_configmap}  ${value_cli}
