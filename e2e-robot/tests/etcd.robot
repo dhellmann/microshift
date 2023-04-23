@@ -18,9 +18,17 @@ ${ETCD_SYSTEMD_UNIT}	microshift-etcd.scope
 ${MEMLIMIT128}      SEPARATOR=\n
 ...  ---
 ...  etcd:
-...  \ memoryLimitMB: 128
+...  \ \ memoryLimitMB: 128
+${MEMLIMIT128J}
+...  {"etcd": {"memoryLimitMB": 128}}
 
 *** Test Cases ***
+Show
+    Log  ${MEMLIMIT128}
+    Log  ${MEMLIMIT128J}
+    ${val}=  Convert to Yaml  ${MEMLIMIT128J}
+    Log  ${val}
+
 Default MemoryHigh Unlimited
     ${memory_high}=  Get Systemd Setting  microshift-etcd  MemoryHigh
     Should Be Equal  infinity  ${memory_high}

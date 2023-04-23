@@ -1,3 +1,5 @@
+import json
+
 import yaml
 from robot.api import Failure, logger
 
@@ -17,3 +19,11 @@ class YAML:
 
     def yaml_get(self, parsed, key):
         return _yaml_get(parsed, key)
+
+    def convert_to_yaml(self, json_text):
+        logger.info(f"convert_to_yaml({json_text})")
+        data = json.loads(json_text)
+        logger.info(f"parsed data: {data}")
+        formatted = yaml.dump(data)
+        logger.info(f"formatted:\n{formatted}")
+        return formatted
