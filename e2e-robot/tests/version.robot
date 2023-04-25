@@ -20,30 +20,22 @@ ${USHIFT_USER}      ${EMPTY}
 ConfigMap Contents
     [Documentation]  Check the version of the server
 
-    ${version_configmap}=  Oc Get  configmap  kube-public  microshift-version
-    ${major_version}=  Yaml Get  ${version_configmap}  data.major
-    Should Be Equal As Integers    ${major_version}    4
-    ${minor_version}=  Yaml Get  ${version_configmap}  data.minor
-    Should Be Equal As Integers    ${minor_version}    14
+    ${configmap}=  Oc Get  configmap  kube-public  microshift-version
+    Should Be Equal As Integers    ${configmap.data.major}    4
+    Should Be Equal As Integers    ${configmap.data.minor}    14
 
 CLI Output
     [Documentation]  Check the version reported by the process
 
-    ${version_data}=  MicroShift Version
-    ${major_version}=  Get From Dictionary  ${version_data}  major
-    Should Be Equal As Integers    ${major_version}    4
-    ${minor_version}=  Get From Dictionary  ${version_data}  minor
-    Should Be Equal As Integers    ${minor_version}    14
-
-    ${microshift_version}=  Get From Dictionary  ${version_data}  gitVersion
-    Should Start With  ${microshift_version}  4.14
+    ${version}=  MicroShift Version
+    Should Be Equal As Integers    ${version.major}    4
+    Should Be Equal As Integers    ${version.minor}    14
+    Should Start With  ${version.gitVersion}  4.14
 
 
 ConfigMap Matches CLI
     [Documentation]  Ensure the ConfigMap is being updated based on the actual binary version
 
-    ${version_configmap}=  Oc Get  configmap  kube-public  microshift-version
-    ${value_configmap}=  Yaml Get  ${version_configmap}  data.version
-    ${version_cli}=  MicroShift Version
-    ${value_cli}=  Get From Dictionary  ${version_cli}  gitVersion
-    Should Be Equal  ${value_configmap}  ${value_cli}
+    ${configmap}=  Oc Get  configmap  kube-public  microshift-version
+    ${cli}=  MicroShift Version
+    Should Be Equal  ${configmap.data.version}  ${cli.gitVersion}

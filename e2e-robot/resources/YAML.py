@@ -2,6 +2,7 @@ import json
 
 import yaml
 from robot.api import Failure, logger
+from robot.utils import DotDict
 
 
 def _yaml_get(parsed, key):
@@ -15,7 +16,8 @@ def _yaml_get(parsed, key):
 class YAML:
 
     def yaml_parse(self, data):
-        return yaml.safe_load(data)
+        parsed = yaml.safe_load(data)
+        return DotDict(parsed)
 
     def yaml_get(self, parsed, key):
         return _yaml_get(parsed, key)
