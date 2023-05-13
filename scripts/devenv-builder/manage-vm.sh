@@ -126,6 +126,14 @@ function action_create {
     echo "Checking subscription-manager..."
     ssh -t "microshift@${ip}" "if ! sudo subscription-manager status; then sudo subscription-manager register; fi"
 
+    # Limit the scope of any upgrade commands to the version of RHEL
+    # we ask to have installed into the VM. This prevents upgrades
+    # past minor version boundaries, so that a 9.0 host will not
+    # update to 9.2 packages, for example.
+    # https://access.redhat.com/solutions/238533
+    echo "Setting release version to $MICROSHIFT_RHEL_VERSION ..."
+    ssh -t "microshift@${ip}" "sudo subscription-manager release --set $MICROSHIFT_RHEL_VERSION; sudo subscription-manager release --show"
+
     echo "VM online at ${ip}"
 }
 
