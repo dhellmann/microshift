@@ -54,6 +54,11 @@ func Perform() error {
 		return nil
 	}
 
+	if info.DeploymentID == "" {
+		klog.InfoS("There is no ostree deployment id - skipping backup")
+		return nil
+	}
+
 	if info.Health != "healthy" {
 		klog.InfoS("Skipping backup: The previous boot was not healthy")
 		return nil
