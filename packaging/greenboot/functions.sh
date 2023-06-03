@@ -184,3 +184,15 @@ function namespace_pods_not_restarting() {
     [ "${restarts}" -lt 0 ] && return 0
     return 1
 }
+
+# Retrieve the rpm-ostree deployment id. If the system was not booted on an rpm-ostree,
+# warn to stderr and return an empty string.
+#
+function get_ostree_deployment_id() {
+    if rpm-ostree status 2>/dev/null; then
+        rpm-ostree status --booted --jsonpath='$.deployments[0].id' | jq -r '.[0]'
+    else
+        echo "not an ostree system" 1>&2
+        echo ""
+    fi
+}

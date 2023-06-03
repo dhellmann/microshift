@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
+
+# Source the MicroShift health check functions library
+# shellcheck source=packaging/greenboot/functions.sh
+source /usr/share/microshift/functions/greenboot.sh
 
 HEALTH=unhealthy
-
-if [ ! -f /run/ostree-booted ]; then
-    echo "System is not booted with ostree"
-    exit 0
-fi
 
 mkdir -p /var/lib/microshift-backups
 
 boot=$(tr -d '-' < /proc/sys/kernel/random/boot_id)
-deploy=$(rpm-ostree status --booted --jsonpath='$.deployments[0].id' | jq -r '.[0]')
+deploy=$(get_ostree_deployment_id)
+
+echo "recording ${HEALTH} status for boot ${boot} from deployment ${deploy}"
+
 jq \
     --null-input \
     --arg health "${HEALTH}" \
