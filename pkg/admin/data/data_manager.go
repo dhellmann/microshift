@@ -64,7 +64,7 @@ func (dm *manager) GetBackupList() ([]BackupName, error) {
 }
 
 func (dm *manager) Backup(name BackupName) error {
-	klog.InfoS("Backing up the data",
+	klog.InfoS("Starting backup",
 		"storage", dm.storage, "name", name, "data", config.DataDir)
 
 	if name == "" {
@@ -81,12 +81,11 @@ func (dm *manager) Backup(name BackupName) error {
 	if found, err := pathExists(string(dm.storage)); err != nil {
 		return err
 	} else if !found {
+		klog.InfoS("Creating backup storage directory", "path", dm.storage)
 		if makeDirErr := util.MakeDir(string(dm.storage)); makeDirErr != nil {
-			return fmt.Errorf("making %s directory failed: %w", dm.storage, makeDirErr)
+			return fmt.Errorf("creating %s directory failed: %w", dm.storage, makeDirErr)
 		}
-		klog.InfoS("Backup storage directory created", "path", dm.storage)
-	} else {
-		klog.InfoS("Backup storage directory already existed", "path", dm.storage)
+		klog.InfoS("Created backup storage directory", "path", dm.storage)
 	}
 
 	dest := dm.GetBackupPath(name)
@@ -95,7 +94,7 @@ func (dm *manager) Backup(name BackupName) error {
 		return err
 	}
 
-	klog.InfoS("Backup finished", "backup", dest, "data", config.DataDir)
+	klog.InfoS("Completed backup", "backup", dest, "data", config.DataDir)
 	return nil
 }
 

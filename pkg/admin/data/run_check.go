@@ -18,6 +18,8 @@ var (
 
 func MicroShiftIsNotRunning() error {
 	for _, service := range services {
+		klog.InfoS("Checking service state", "service", service)
+
 		cmd := exec.Command("systemctl", "show", "-p", "ActiveState", "--value", service)
 		out, err := cmd.CombinedOutput()
 		state := strings.TrimSpace(string(out))
@@ -25,7 +27,7 @@ func MicroShiftIsNotRunning() error {
 			return fmt.Errorf("error when checking if %s is active: %w", service, err)
 		}
 
-		klog.InfoS("Service state", "service", service, "state", state)
+		klog.InfoS("Found service state", "service", service, "state", state)
 
 		if state != expectedState {
 			return fmt.Errorf("service %s is %s - expected to be %s", service, state, expectedState)

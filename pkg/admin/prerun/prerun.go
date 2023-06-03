@@ -13,6 +13,8 @@ import (
 )
 
 func Perform() error {
+	klog.Info("Starting pre-run")
+
 	healthFile := "/var/lib/microshift-backups/health.json"
 	exists, err := util.PathExists(healthFile)
 	if err != nil {
@@ -20,7 +22,7 @@ func Perform() error {
 		return err
 	}
 	if !exists {
-		klog.InfoS("Boot health information is missing - skipping backup")
+		klog.InfoS("Boot health information is missing - skipping backup", "path", healthFile)
 		return nil
 	}
 
@@ -45,17 +47,18 @@ func Perform() error {
 		klog.ErrorS(err, "Failed to unmarshal json", "data", string(d))
 		return err
 	}
-
-	klog.InfoS("Read health info", "info", info)
+	klog.InfoS("Loaded health data", "data", info)
 
 	if info.BootID == currentBootID {
-		klog.InfoS("Current boot in health file - skipping backup")
+		klog.InfoS("Skipping backup: The current boot ID matches the ID in health file")
 		return nil
 	}
 
 	if info.Health != "healthy" {
+		klog.InfoS("Skipping backup: The previous boot was not healthy")
 		return nil
 	}
+
 	name := data.BackupName(fmt.Sprintf("%s_%s", info.DeploymentID, info.BootID))
 
 	dm, err := data.NewManager(config.BackupsDir)
