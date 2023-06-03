@@ -10,6 +10,7 @@ import (
 
 	"github.com/openshift/microshift/pkg/config"
 	"github.com/openshift/microshift/pkg/util"
+	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -72,18 +73,17 @@ func (dm *manager) Backup(name BackupName) error {
 	}
 
 	if exists, err := dm.BackupExists(name); err != nil {
-		return fmt.Errorf("checking if backup %s exists failed: %w", name, err)
+		return errors.Wrap(err, fmt.Sprintf("could not determine if backup %s exists", name))
 	} else if exists {
-		klog.ErrorS(nil, "Backup already exists - name should be unique", "name", name)
-		return fmt.Errorf("backup %s already exists", name)
+		return fmt.Errorf("backup %s already exists, name must be unique", name)
 	}
 
 	if found, err := pathExists(string(dm.storage)); err != nil {
-		return err
+		return errors.Wrap(err, "could not determine if backup storage directory")
 	} else if !found {
 		klog.InfoS("Creating backup storage directory", "path", dm.storage)
 		if makeDirErr := util.MakeDir(string(dm.storage)); makeDirErr != nil {
-			return fmt.Errorf("creating %s directory failed: %w", dm.storage, makeDirErr)
+			return errors.Wrap(makeDirErr, fmt.Sprintf("failed to create backup storage directory %s", dm.storage))
 		}
 		klog.InfoS("Created backup storage directory", "path", dm.storage)
 	}
@@ -91,7 +91,7 @@ func (dm *manager) Backup(name BackupName) error {
 	dest := dm.GetBackupPath(name)
 
 	if err := copyDataDir(dest); err != nil {
-		return err
+		return errors.Wrap(err, "failed to create backup")
 	}
 
 	klog.InfoS("Completed backup", "backup", dest, "data", config.DataDir)
@@ -116,7 +116,7 @@ func copyDataDir(dest string) error {
 		"stderr", errb.String())
 
 	if err != nil {
-		return fmt.Errorf("command %s failed: %w", cmd, err)
+		return errors.Wrap(err, "copy command failed")
 	}
 
 	klog.InfoS("Command successful", "cmd", cmd)
@@ -126,7 +126,7 @@ func copyDataDir(dest string) error {
 func pathExists(path string) (bool, error) {
 	exists, err := util.PathExists(path)
 	if err != nil {
-		return false, fmt.Errorf("checking if %s exists failed: %w", path, err)
+		return false, errors.Wrap(err, fmt.Sprintf("could not determine if %s exists", path))
 	}
 	return exists, nil
 }

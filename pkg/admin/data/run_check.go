@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -24,7 +25,7 @@ func MicroShiftIsNotRunning() error {
 		out, err := cmd.CombinedOutput()
 		state := strings.TrimSpace(string(out))
 		if err != nil {
-			return fmt.Errorf("error when checking if %s is active: %w", service, err)
+			return errors.Wrap(err, fmt.Sprintf("could not determine if %s is active", service))
 		}
 
 		klog.InfoS("Found service state", "service", service, "state", state)

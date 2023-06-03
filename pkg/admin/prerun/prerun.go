@@ -9,6 +9,7 @@ import (
 	"github.com/openshift/microshift/pkg/admin/data"
 	"github.com/openshift/microshift/pkg/config"
 	"github.com/openshift/microshift/pkg/util"
+	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -28,8 +29,7 @@ func Perform() error {
 
 	currentBootID, err := getCurrentBootID()
 	if err != nil {
-		klog.ErrorS(err, "Failed to get current boot ID")
-		return err
+		return errors.Wrap(err, "Failed to get current boot ID")
 	}
 	klog.InfoS("Current boot", "id", currentBootID)
 
