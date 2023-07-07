@@ -60,5 +60,18 @@ func ActiveConfig() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading config file %q: %v", ConfigFile, err)
 	}
-	return getActiveConfigFromYAML(contents)
+	active, err := getActiveConfigFromYAML(contents)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active config: %w", err)
+	}
+
+	// Make sure we provide the actual node name.
+	cachedNodeName, cacheExists, err := active.readNodeNameCache(DataDir)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update node name: %w", err)
+	}
+	if cacheExists {
+		active.Node.HostnameOverride = cachedNodeName
+	}
+	return active, nil
 }

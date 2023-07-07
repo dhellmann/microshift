@@ -35,24 +35,49 @@ func (c *Config) CanonicalNodeName() string {
 	return strings.ToLower(c.Node.HostnameOverride)
 }
 
-// Read or set the NodeName that will be used for this MicroShift instance
-func (c *Config) establishNodeName(dataDir string) (string, error) {
-	name := c.CanonicalNodeName()
+// Read the cached node name, if any. Returns the contents, whether it
+// was read from the file, and any error.
+func (c *Config) readNodeNameCache(dataDir string) (string, bool, error) {
 	filePath := filepath.Join(dataDir, ".nodename")
 	contents, err := os.ReadFile(filePath)
 	if os.IsNotExist(err) {
-		// ensure that dataDir exists
-		if err := os.MkdirAll(dataDir, 0700); err != nil {
-			return "", fmt.Errorf("failed to create data dir: %w", err)
-		}
-		if err := os.WriteFile(filePath, []byte(name), 0400); err != nil {
-			return "", fmt.Errorf("failed to write nodename file %q: %v", filePath, err)
-		}
-		return name, nil
-	} else if err != nil {
-		return "", err
+		return "", false, nil
 	}
-	return string(contents), nil
+	if err != nil {
+		return "", false, fmt.Errorf("failed to read cached node name from %s: %w", filePath, err)
+	}
+	return strings.TrimSpace(string(contents)), true, nil
+}
+
+// Save a node name to the cache location
+func (c *Config) writeNodeNameCache(name string, dataDir string) error {
+	filePath := filepath.Join(dataDir, ".nodename")
+	// ensure that dataDir exists
+	if err := os.MkdirAll(dataDir, 0700); err != nil {
+		return fmt.Errorf("failed to create data dir: %w", err)
+	}
+	if err := os.WriteFile(filePath, []byte(name), 0400); err != nil {
+		return fmt.Errorf("failed to write nodename file %q: %v", filePath, err)
+	}
+	return nil
+}
+
+// Read or set the NodeName that will be used for this MicroShift instance
+func (c *Config) establishNodeName(dataDir string) (string, error) {
+	name := c.CanonicalNodeName()
+	cachedName, cacheExists, err := c.readNodeNameCache(dataDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to establish node name: %w", err)
+	}
+	if !cacheExists {
+		err := c.writeNodeNameCache(name, dataDir)
+		if err != nil {
+			return "", fmt.Errorf("failed to update node name cache: %w", err)
+		}
+	} else {
+		name = cachedName
+	}
+	return name, nil
 }
 
 // Validate the NodeName to be used for this MicroShift instances
