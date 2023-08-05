@@ -15,32 +15,43 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # shellcheck source=test/bin/common.sh
 source "${SCRIPTDIR}/common.sh"
 
-configure_package_sources() {
-    ## TEMPLATE VARIABLES
-    #
+render_template() {
+    local infile="$1"
+    local outfile="$2"
+
     # Machine platform type ("x86_64")
     UNAME_M=$(uname -m)
-    export UNAME_M
-    export LOCAL_REPO              # defined in common.sh
-    export NEXT_REPO               # defined in common.sh
-    export MAIN_REPO               # defined in common.sh
-    export YPLUS2_REPO             # defined in common.sh
-    export SOURCE_VERSION
-    export FAKE_NEXT_MINOR_VERSION
-    export FAKE_YPLUS2_MINOR_VERSION
-    export MINOR_VERSION
-    export PREVIOUS_MINOR_VERSION
-    export SOURCE_VERSION_MAIN
 
+    echo "Rendering ${infile} to ${outfile}"
+    cat "${infile}" \
+        | sed -e "s|REPLACE_UNAME_M|${UNAME_M}|g" \
+              -e "s|REPLACE_LOCAL_REPO|${LOCAL_REPO}|g" \
+              -e "s|REPLACE_NEXT_REPO|${NEXT_REPO}|g" \
+              -e "s|REPLACE_MAIN_REPO|${MAIN_REPO}|g" \
+              -e "s|REPLACE_YPLUS2_REPO|${YPLUS2_REPO}|g" \
+              -e "s|REPLACE_SOURCE_VERSION|${SOURCE_VERSION}|g" \
+              -e "s|REPLACE_FAKE_NEXT_MINOR_VERSION|${FAKE_NEXT_MINOR_VERSION}|g" \
+              -e "s|REPLACE_FAKE_YPLUS2_MINOR_VERSION|${FAKE_YPLUS2_MINOR_VERSION}|g" \
+              -e "s|REPLACE_MINOR_VERSION|${MINOR_VERSION}|g" \
+              -e "s|REPLACE_PREVIOUS_MINOR_VERSION|${PREVIOUS_MINOR_VERSION}|g" \
+              -e "s|REPLACE_MAIN_VERSION|${MAIN_VERSION}|g" \
+              >"${outfile}"
+}
+
+configure_package_sources() {
     # Add our sources. It is OK to run these steps repeatedly, if the
     # details change they are updated in the service.
     title "Expanding package source templates to ${IMAGEDIR}/package-sources"
+
+    local template
+    local name
+    local outfile
+
     mkdir -p "${IMAGEDIR}/package-sources"
     for template in "${TESTDIR}"/package-sources/*.toml; do
         name=$(basename "${template}" .toml)
         outfile="${IMAGEDIR}/package-sources/${name}.toml"
-        echo "Rendering ${template} to ${outfile}"
-        envsubst <"${template}" >"${outfile}"
+        render_template "${template}" "${outfile}"
         echo "Adding package source from ${outfile}"
         if sudo composer-cli sources list | grep "^${name}\$"; then
             sudo composer-cli sources delete "${name}"
@@ -171,8 +182,7 @@ do_group() {
         echo "Blueprint ${template}"
 
         blueprint_file="${IMAGEDIR}/blueprints/$(basename "${template}")"
-        echo "Rendering ${template} to ${blueprint_file}"
-        envsubst <"${template}" >"${blueprint_file}"
+        render_template "${template}" "${blueprint_file}"
 
         blueprint=$(get_blueprint_name "${blueprint_file}")
 
@@ -385,7 +395,7 @@ MINOR_VERSION=$(echo "${SOURCE_VERSION}" | cut -f2 -d.)
 PREVIOUS_MINOR_VERSION=$(( "${MINOR_VERSION}" - 1 ))
 FAKE_NEXT_MINOR_VERSION=$(( "${MINOR_VERSION}" + 1 ))
 FAKE_YPLUS2_MINOR_VERSION=$(( "${MINOR_VERSION}" + 2 ))
-SOURCE_VERSION_MAIN=$(rpm -q --queryformat '%{version}' "${release_info_rpm_main}")
+MAIN_VERSION=$(rpm -q --queryformat '%{version}' "${release_info_rpm_main}")
 
 mkdir -p "${IMAGEDIR}"
 LOGDIR="${IMAGEDIR}/build-logs"
