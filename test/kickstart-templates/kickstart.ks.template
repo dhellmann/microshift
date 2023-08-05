@@ -38,7 +38,6 @@ ostreesetup --nogpg --osname=rhel --remote=edge --url=REPLACE_OSTREE_SERVER_URL 
 %post --log=/var/log/anaconda/post-install.log --erroronfail
 
 # Set the configuration of MicroShift to include subjectAltNames
-mkdir -p /etc/microshift
 cat - >/etc/microshift/config.yaml <<EOF
 apiServer:
   subjectAltNames:

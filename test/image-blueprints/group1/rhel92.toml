@@ -24,6 +24,12 @@ name = "redhat"
 password = "$5$XDVQ6DxT8S5YWLV7$8f2om5JfjK56v9ofUkUAwZXTxJl3Sqnc9yPnza4xoJ0"
 home = "/home/redhat"
 
+[[customizations.directories]]
+path = "/etc/microshift"
+mode = "0700"
+user = "root"
+group = "root"
+
 [[customizations.files]]
 path = "/etc/sudoers.d/microshift"
 mode = "0644"
