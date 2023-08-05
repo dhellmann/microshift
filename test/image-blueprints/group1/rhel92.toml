@@ -17,3 +17,16 @@ ports = ["22:tcp"]
 
 [customizations.firewall.services]
 enabled = ["ssh"]
+
+# Create a default redhat user, allowing it to run sudo commands without password
+[[customizations.user]]
+name = "redhat"
+password = "$5$XDVQ6DxT8S5YWLV7$8f2om5JfjK56v9ofUkUAwZXTxJl3Sqnc9yPnza4xoJ0"
+home = "/home/redhat"
+
+[[customizations.files]]
+path = "/etc/sudoers.d/microshift"
+mode = "0644"
+user = "root"
+group = "root"
+data = "redhat\tALL=(ALL)\tNOPASSWD: ALL"
