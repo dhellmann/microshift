@@ -47,6 +47,28 @@ set_vm_property() {
     echo "${value}" > "${property_file}"
 }
 
+run_command_on_vm() {
+    local -r vmname="$1"
+    shift
+    local -r command="$*"
+
+    local -r ip=$(get_vm_property "${vmname}" ip)
+    local -r ssh_port=$(get_vm_property "${vmname}" ssh_port)
+
+    ssh "redhat@${ip}" -p "${ssh_port}" -t "${command}"
+}
+
+copy_file_to_vm() {
+    local -r vmname="$1"
+    local -r local_filename="$2"
+    local -r remote_filename="$3"
+
+    local -r ip=$(get_vm_property "${vmname}" ip)
+    local -r ssh_port=$(get_vm_property "${vmname}" ssh_port)
+
+    scp "redhat@${ip}" -p "${ssh_port}" "${local_filename}" "${remote_filename}"
+}
+
 sos_report() {
     if "${SKIP_SOS}"; then
         echo "Skipping sos reports"
@@ -58,16 +80,14 @@ sos_report() {
             # skip log files, etc.
             continue
         fi
-        ip=$(cat "${vmdir}/ip")
-        if [ -z "${ip}" ] ; then
+        local -r vmname=$(basename "${vmdir}")
+        local -r ip=$(get_vm_property "${vmname}" ip)
+        if [ -z "${ip}" ]; then
             # skip hosts without NICs
             # FIXME: use virsh to copy sos report files
             continue
         fi
-        # Copy the sos helper for compatibility, it is only available in 4.14 RPMs
-        scp "${ROOTDIR}/scripts/microshift-sos-report.sh" "redhat@${ip}":/tmp
-        ssh "redhat@${ip}" \
-            "[ -f /usr/bin/microshift-sos-report ] && sudo /usr/bin/microshift-sos-report || sudo /tmp/microshift-sos-report.sh ; sudo chmod +r /tmp/sosreport*"
+        run_command_on_vm "${vmname}" "sudo sos report --quiet --batch --all-logs --tmp-dir /tmp && sudo chmod +r /tmp/sosreport*"
         mkdir -p "${vmdir}/sos"
         scp "redhat@${ip}:/tmp/sosreport*.tar.xz" "${vmdir}/sos/"
     done
