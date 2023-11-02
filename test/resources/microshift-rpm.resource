@@ -10,7 +10,15 @@ ${REPO_FILE_NAME}       "/etc/yum.repos.d/microshift-local.repo"
 
 
 *** Keywords ***
-Install MicroShift RPM Packages
+Install MicroShift RPM Packages From System Repo
+    [Documentation]    Installs MicroShift RPM packages from a system repository
+    ${stdout}    ${stderr}    ${rc}=    SSHLibrary.Execute Command
+    ...    dnf install -y microshift
+    ...    sudo=True    return_rc=True    return_stderr=True    return_stdout=True
+    Log    ${stderr}
+    Should Be Equal As Integers    0    ${rc}
+
+Install MicroShift RPM Packages From Repo
     [Documentation]    Installs MicroShift RPM packages from the specified URL
     [Arguments]    ${repo_url}
 
