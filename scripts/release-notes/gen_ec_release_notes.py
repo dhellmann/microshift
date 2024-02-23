@@ -127,15 +127,25 @@ def main():
         default=False,
         help='Report but take no action',
     )
+    parser.add_argument(
+        '-v', '--version',
+        dest='versions',
+        default=[],
+        action='append',
+        help=(
+            'Specify a major and minor version (4.x) to include. ' +
+            f'Defaults to versions newer than {", ".join(OLD_VERSIONS)}.'
+        ),
+    )
     args = parser.parse_args()
 
     new_releases = []
     if args.ec:
-        new_releases.extend(find_new_releases(URL_BASE, 'ocp-dev-preview'))
-        new_releases.extend(find_new_releases(URL_BASE_X86, 'ocp-dev-preview'))
+        new_releases.extend(find_new_releases(URL_BASE, 'ocp-dev-preview', args.versions))
+        new_releases.extend(find_new_releases(URL_BASE_X86, 'ocp-dev-preview', args.versions))
     if args.rc:
-        new_releases.extend(find_new_releases(URL_BASE, 'ocp'))
-        new_releases.extend(find_new_releases(URL_BASE_X86, 'ocp'))
+        new_releases.extend(find_new_releases(URL_BASE, 'ocp', args.versions))
+        new_releases.extend(find_new_releases(URL_BASE_X86, 'ocp', args.versions))
 
     if not new_releases:
         print("No new releases found.")
@@ -205,7 +215,7 @@ class VersionListParser(html.parser.HTMLParser):
         print(f"WARNING: error processing HTML: {message}")
 
 
-def find_new_releases(url_base, release_type):
+def find_new_releases(url_base, release_type, include_only_versions):
     """Returns a list of Release instances for missing releases.
     """
     new_releases = []
@@ -219,6 +229,8 @@ def find_new_releases(url_base, release_type):
         # Skip very old RCs, indicated by the first 2 parts of the
         # version string major.minor.
         version_prefix = '.'.join(version.split('.')[:2])
+        if include_only_versions and version_prefix not in include_only_versions:
+            continue
         if version_prefix in OLD_VERSIONS:
             continue
         try:
